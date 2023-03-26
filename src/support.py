@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pickle
+import math
+from scipy import stats
 
 #display
 from IPython.display import display
@@ -51,6 +53,46 @@ def analisis_basico(dataframe):
     sns.pairplot(data=dataframe);
     print("_________________________________\n")
 
+def regplot_numericas(dataframe, columnas_drop, variable_respuesta):
+    df_numericas = dataframe.select_dtypes(include = np.number)
+    columnas = df_numericas.drop(columnas_drop, axis = 1)
+    fig, axes = plt.subplots(nrows=int(columnas.shape[1]/2), ncols=int(columnas.shape[1] / 3), figsize = (10 * columnas.shape[1] / 2,10 * columnas.shape[1] / 3))
+    axes = axes.flat
+    for i, columns in enumerate(columnas.columns):
+        sns.regplot(data = dataframe, 
+            x = columns, 
+            y = variable_respuesta, 
+            ax = axes[i],
+            color = 'gray',
+            scatter_kws = {"alpha": 0.4}, 
+            line_kws = {"color": "red", "alpha": 0.7 }
+            )
+    fig.tight_layout();
+
+def chart_categoricas(df, variable_respuesta):
+    df_cate = df.select_dtypes(include = 'object')
+    print(df_cate.shape[1])
+    fig, axes = plt.subplots(nrows=math.ceil(df_cate.shape[1]/2), ncols=math.ceil(df_cate.shape[1] / 2), figsize = (10 * df_cate.shape[1] / 2, 10 * df_cate.shape[1] / 2))
+    axes = axes.flat
+    for i, columns in enumerate(df_cate.columns):
+        df_cat = df.groupby(columns)[variable_respuesta].median().reset_index()
+        sns.barplot(data = df_cat, 
+            x = columns, 
+            y = variable_respuesta,
+            ax = axes[i]
+            )
+    fig.tight_layout();
+
+def chart_boxplot(dataframe):
+    df_numericas = dataframe.select_dtypes(include = np.number).drop(['id'], axis = 1)
+
+    fig, ax = plt.subplots(df_numericas.shape[1], 1, figsize=(12, 2.5 * df_numericas.shape[1]))
+
+    for i in range(len(df_numericas.columns)):
+        sns.boxplot(x=df_numericas.columns[i], data=df_numericas, ax=ax[i])
+    plt.tight_layout()
+    plt.show();
+
 def detectar_outliers(lista_columnas, dataframe):
 
     dict_indices = {}
@@ -71,6 +113,31 @@ def detectar_outliers(lista_columnas, dataframe):
             pass
     return dict_indices
 
+def normalizacion(df, variable_respuesta):
+    df[f'{variable_respuesta}_LOG'] = df[variable_respuesta].apply(lambda x: np.log(x) if x != 0 else 0)
+    df[f'{variable_respuesta}_SQRT'] = df[variable_respuesta].apply(lambda x: math.sqrt(x) if x != 0 else 0)
+    df[f'{variable_respuesta}_BC'], lambda_ajustada = stats.boxcox(df[variable_respuesta])
+
+    print('original', stats.shapiro(df[f"{variable_respuesta}"]), 
+          '\n log:', stats.shapiro(df[f'{variable_respuesta}_LOG']), 
+        '\n sqrt', stats.shapiro(df[f'{variable_respuesta}_SQRT']), 
+        '\n bc:', stats.shapiro(df[f'{variable_respuesta}_BC']),
+    )
+
+    fig, axes = plt.subplots(1, 4, figsize = (20,5))
+
+    axes[0].set_title(f'{variable_respuesta} original')
+    axes[1].set_title(f'{variable_respuesta} logaritmica')
+    axes[2].set_title(f'{variable_respuesta} SQRT')
+    axes[3].set_title(f'{variable_respuesta} boxcox')
+
+    sns.distplot(df[f'{variable_respuesta}'] ,ax = axes[0])
+    sns.distplot(df[f'{variable_respuesta}_LOG'], ax = axes[1])
+    sns.distplot(df[f'{variable_respuesta}_SQRT'], ax = axes[2])
+    sns.distplot(df[f'{variable_respuesta}_BC'], ax = axes[3])
+    fig.tight_layout();
+    return df
+
 def estandarizacion(dataframe, columnas, input):
     data = dataframe[columnas]
     if input == 'media':
@@ -81,7 +148,7 @@ def estandarizacion(dataframe, columnas, input):
         print("aprende a escribir")
     modelo.fit(data)
     X = modelo.transform(data)
-    with open('datos/estandarizacion.pkl', 'wb') as s:
+    with open('../data/modelo/estandarizacion.pkl', 'wb') as s:
         pickle.dump(modelo, s)
     return X
 
@@ -97,7 +164,7 @@ def encoding(dataframe, columnas, input):
             
             dataframe.drop(columna, axis = 1, inplace = True)
             
-            with open(f'datos/encoding_{columna}.pkl', 'wb') as s:
+            with open(f'../data/modelo/encoding_{columna}.pkl', 'wb') as s:
                 pickle.dump(modelo, s)
         
         return dataframe
@@ -111,7 +178,7 @@ def encoding(dataframe, columnas, input):
             modelo = OrdinalEncoder(categories = [orden], dtype = int)
             transformados = modelo.fit_transform(dataframe[[columna]])
             dataframe[columna] = transformados
-            with open(f'datos/encoding_{columna}.pkl', 'wb') as s:
+            with open(f'../data/encoding_{columna}.pkl', 'wb') as s:
                 pickle.dump(modelo, s)
         return dataframe
     else:
