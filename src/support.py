@@ -252,6 +252,9 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
                 n_jobs = -1,
                 return_train_score = True,
                 scoring="neg_mean_squared_error")
+        gs.fit(X_train, y_train)
+        fig = plt.figure(figsize=(12, 6))
+        tree.plot_tree(gs.best_estimator_, feature_names=X_train.columns, filled=True);
     elif input == 'RandomForest':
         gs = GridSearchCV(
             estimator=RandomForestRegressor(),
@@ -261,6 +264,7 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
             n_jobs = -1,
             return_train_score = True,
             scoring="neg_mean_squared_error")
+        gs.fit(X_train, y_train)
     elif input == 'GradientBoosting':
         gs = GridSearchCV(
             estimator=GradientBoostingRegressor(),
@@ -270,11 +274,9 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
             n_jobs = -1,
             return_train_score = True,
             scoring="neg_mean_squared_error")
+        gs.fit(X_train, y_train)
     else: 
         print('aprende a escribir')
-    gs.fit(X_train, y_train)
-    fig = plt.figure(figsize=(12, 6))
-    tree.plot_tree(gs.best_estimator_, feature_names=X_train.columns, filled=True);
     print(datetime.now())
     return gs.best_estimator_, param
 
