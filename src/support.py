@@ -12,6 +12,7 @@ from matplotlib import style
 import matplotlib.ticker as ticker
 import seaborn as sns
 plt.rcParams["figure.figsize"] = (10,8)
+from IPython.display import clear_output
 
 #normalización
 from sklearn.preprocessing import MinMaxScaler
@@ -265,6 +266,7 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
             return_train_score = True,
             scoring="neg_mean_squared_error")
         gs.fit(X_train, y_train)
+        clear_output(wait = True)
     elif input == 'GradientBoosting':
         gs = GridSearchCV(
             estimator=GradientBoostingRegressor(),
@@ -275,6 +277,7 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
             return_train_score = True,
             scoring="neg_mean_squared_error")
         gs.fit(X_train, y_train)
+        clear_output(wait = True)
     else: 
         print('aprende a escribir')
     print(datetime.now())
