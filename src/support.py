@@ -28,6 +28,16 @@ from sklearn.preprocessing import OrdinalEncoder
 #metrics
 from sklearn import metrics
 
+#modelo
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor 
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import GridSearchCV
+from sklearn import tree
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_validate
+
 # warnings
 import warnings
 warnings.filterwarnings('ignore')
@@ -178,7 +188,7 @@ def encoding(dataframe, columnas, input):
             modelo = OrdinalEncoder(categories = [orden], dtype = int)
             transformados = modelo.fit_transform(dataframe[[columna]])
             dataframe[columna] = transformados
-            with open(f'../data/encoding_{columna}.pkl', 'wb') as s:
+            with open(f'../data/modelo/encoding_{columna}.pkl', 'wb') as s:
                 pickle.dump(modelo, s)
         return dataframe
     else:
@@ -194,3 +204,97 @@ def metricas(y_test, y_train, y_test_pred, y_train_pred, tipo_modelo):
     df = pd.DataFrame(resultados)
     df["modelo"] = tipo_modelo
     return df
+
+def linear_regression(X_train, y_train, X_test, y_test):
+    modelo = LinearRegression()
+    modelo.fit(X_train, y_train)
+    y_pred_test = modelo.predict(X_test)
+    y_pred_train = modelo.predict(X_train)
+
+    train_df = pd.DataFrame({'Real': y_train, 'Predicted': y_pred_train, 'Set': ['Train']*len(y_train)})
+    test_df  = pd.DataFrame({'Real': y_test,  'Predicted': y_pred_test,  'Set': ['Test']*len(y_test)})
+    results = pd.concat([train_df,test_df], axis = 0)
+    results['residual'] = results['Real'] - results['Predicted']
+    return y_pred_test, y_pred_train, results
+
+def decission_tree_params(X_train, y_train, X_test, y_test):
+    # create a regressor object
+    modelo = DecisionTreeRegressor(random_state = 0) 
+    
+    # fit the regressor with X and Y data
+    modelo.fit(X_train, y_train)
+
+    max_features = np.sqrt(len(X_train.columns))
+    max_depth = modelo.tree_.max_depth
+
+    y_pred_test_dt = modelo.predict(X_test)
+    y_pred_train_dt = modelo.predict(X_train)
+    return y_pred_test_dt, y_pred_train_dt, max_features, max_depth
+
+def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_features, input):
+    param = {
+        'max_depth' : list(range(1, int(max_depth)+1)),
+        'max_features' : list(range(1, int(max_features)+1)),
+        "min_samples_split": [10, 25, 50, 100, 150, 200], # [100, 150, 200] -> número de datos
+        "min_samples_leaf": [10, 25, 50, 100, 150, 200]
+    }
+    if input == 'DecisionTree':
+        gs = GridSearchCV(
+                estimator=DecisionTreeRegressor(),
+                param_grid= param,
+                cv=10,
+                verbose=-2, # muestra el progreso - 2 pa que no te saque todo el input
+                n_jobs = -1,
+                return_train_score = True,
+                scoring="neg_mean_squared_error")
+    elif input == 'RandomForest':
+        gs = GridSearchCV(
+            estimator=RandomForestRegressor(),
+            param_grid= param,
+            cv=10,
+            verbose=-2, # muestra el progreso - 2 pa que no te saque todo el input
+            n_jobs = -1,
+            return_train_score = True,
+            scoring="neg_mean_squared_error")
+    elif input == 'GradientBoosting':
+        gs = GridSearchCV(
+            estimator=GradientBoostingRegressor(),
+            param_grid= param,
+            cv=10,
+            verbose=-2, # muestra el progreso - 2 pa que no te saque todo el input
+            n_jobs = -1,
+            return_train_score = True,
+            scoring="neg_mean_squared_error")
+    else: 
+        print('aprende a escribir')
+    gs.fit(X_train, y_train)
+    fig = plt.figure(figsize=(12, 6))
+    tree.plot_tree(gs.best_estimator_, feature_names=X_train.columns, filled=True);
+    return gs.best_estimator_, param
+
+def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features, min_samples_split, min_samples_leaf, input):
+    if input == 'DecisionTree':
+        modelo = DecisionTreeRegressor( max_depth =  max_depth, 
+                                max_features=max_features, 
+                                min_samples_split=min_samples_split, 
+                                min_samples_leaf=min_samples_leaf)
+    elif input == 'RandomForest':
+        modelo = RandomForestRegressor(min_samples_split= min_samples_split,
+                           min_samples_leaf=min_samples_leaf,
+                           max_features=max_features,
+                           max_depth=max_depth)
+    elif input == 'GradientBoosting':
+        modelo = GradientBoostingRegressor(min_samples_split= min_samples_split,
+                    min_samples_leaf=min_samples_leaf,
+                    max_features=max_features,
+                    max_depth=max_depth)
+    modelo.fit(X_train, y_train)
+    y_pred_test = modelo.predict(X_test)
+    y_pred_train = modelo.predict(X_train)
+
+    #train_df = pd.DataFrame({'Real': y_train, 'Predicted': y_pred_train, 'Set': ['Train']*len(y_train)})
+    #test_df  = pd.DataFrame({'Real': y_test,  'Predicted': y_pred_test,  'Set': ['Test']*len(y_test)})
+    #results = pd.concat([train_df,test_df], axis = 0)
+    #results['residual'] = results['Real'] - results['Predicted']
+
+    return y_pred_test, y_pred_train
