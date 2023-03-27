@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 import math
 from scipy import stats
+from datetime import datetime
 
 #display
 from IPython.display import display
@@ -33,6 +34,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor 
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn import tree
 from sklearn.model_selection import cross_val_score
@@ -41,6 +43,8 @@ from sklearn.model_selection import cross_validate
 # warnings
 import warnings
 warnings.filterwarnings('ignore')
+from sklearn.exceptions import DataConversionWarning
+warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 
 def analisis_basico(dataframe):
     print("_________________________________\n")
@@ -232,6 +236,7 @@ def decission_tree_params(X_train, y_train, X_test, y_test):
     return y_pred_test_dt, y_pred_train_dt, max_features, max_depth
 
 def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_features, input):
+    print(datetime.now())
     param = {
         'max_depth' : list(range(1, int(max_depth)+1)),
         'max_features' : list(range(1, int(max_features)+1)),
@@ -270,6 +275,7 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
     gs.fit(X_train, y_train)
     fig = plt.figure(figsize=(12, 6))
     tree.plot_tree(gs.best_estimator_, feature_names=X_train.columns, filled=True);
+    print(datetime.now())
     return gs.best_estimator_, param
 
 def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features, min_samples_split, min_samples_leaf, input):
@@ -297,4 +303,26 @@ def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features,
     #results = pd.concat([train_df,test_df], axis = 0)
     #results['residual'] = results['Real'] - results['Predicted']
 
+    return y_pred_test, y_pred_train
+
+def knn_crossvalscore(X, y):
+    knn_scores =[]
+    for k in range(1,21):
+        # por defecto nos devuelve la precisión
+        score = cross_val_score(KNeighborsRegressor(n_neighbors = k),
+                            X = X,
+                            y = y,
+                            cv=10, 
+                            scoring = "neg_mean_squared_error")
+        knn_scores.append(score.mean())
+    knn = pd.DataFrame(knn_scores, range(1,21)).reset_index()
+    knn.columns = ["number_neighbors", "score"]
+    knn.sort_values(by = "score", ascending = False).head(3)
+    return knn
+
+def modelo_knn(X_train, y_train, X_test, y_test, neighbors):
+    knn = KNeighborsRegressor(n_neighbors = neighbors)
+    knn.fit(X_train, y_train)
+    y_pred_test = knn.predict(X_test)
+    y_pred_train = knn.predict(X_train)
     return y_pred_test, y_pred_train
