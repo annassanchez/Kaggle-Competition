@@ -86,7 +86,7 @@ def regplot_numericas(dataframe, columnas_drop, variable_respuesta):
 
 def chart_categoricas(df, variable_respuesta):
     df_cate = df.select_dtypes(include = 'object')
-    print(df_cate.shape[1])
+    print(f'este chart da la relación de las variables categóricas con la variable respuesta: {variable_respuesta}')
     fig, axes = plt.subplots(nrows=math.ceil(df_cate.shape[1]/2), ncols=math.ceil(df_cate.shape[1] / 2), figsize = (10 * df_cate.shape[1] / 2, 10 * df_cate.shape[1] / 2))
     axes = axes.flat
     for i, columns in enumerate(df_cate.columns):
@@ -109,9 +109,7 @@ def chart_boxplot(dataframe):
     plt.show();
 
 def detectar_outliers(lista_columnas, dataframe):
-
     dict_indices = {}
-
     for i in lista_columnas:
         Q1 = np.nanpercentile(dataframe[i], 25)
         Q3 = np.nanpercentile(dataframe[i], 75)
@@ -220,6 +218,8 @@ def linear_regression(X_train, y_train, X_test, y_test):
     test_df  = pd.DataFrame({'Real': y_test,  'Predicted': y_pred_test,  'Set': ['Test']*len(y_test)})
     results = pd.concat([train_df,test_df], axis = 0)
     results['residual'] = results['Real'] - results['Predicted']
+    with open(f'data/modelo/modelo_lr.pkl', 'wb') as modelo:
+        pickle.dump(modelo, modelo)
     return y_pred_test, y_pred_train, results
 
 def decission_tree_params(X_train, y_train, X_test, y_test):
@@ -237,51 +237,58 @@ def decission_tree_params(X_train, y_train, X_test, y_test):
     return y_pred_test_dt, y_pred_train_dt, max_features, max_depth
 
 def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_features, input):
-    print(datetime.now())
-    param = {
-        'max_depth' : list(range(1, int(max_depth)+1)),
-        'max_features' : list(range(1, int(max_features)+1)),
-        "min_samples_split": [10, 25, 50, 100, 150, 200], # [100, 150, 200] -> número de datos
-        "min_samples_leaf": [10, 25, 50, 100, 150, 200]
+    print(f"Start time: {datetime.now()}")
+
+    # Define dictionary with key-value pairs of estimator class and params
+    model_and_params = {
+        'DecisionTree': (DecisionTreeRegressor(), {
+            'max_depth' : list(range(1, int(max_depth)+1)),
+            'max_features' : list(range(1, int(max_features)+1)),
+            "min_samples_split": [10, 25, 50, 100, 150, 200], 
+            "min_samples_leaf": [10, 25, 50, 100, 150, 200]
+        }),
+
+        'RandomForest': (RandomForestRegressor(), {
+            'max_depth' : list(range(1, int(max_depth)+1)),
+            'max_features' : list(range(1, int(max_features)+1)),
+            "min_samples_split": [50, 100, 150, 200], 
+            "min_samples_leaf": [50, 100, 150, 200]
+        }),
+
+        'GradientBoosting': (GradientBoostingRegressor(), {
+            'max_depth' : list(range(1, int(max_depth)+1)),
+            'max_features' : list(range(1, int(max_features)+1)),
+            "min_samples_split": [50, 100, 150, 200], 
+            "min_samples_leaf": [50, 100, 150, 200]
+        })
     }
+
+    if input not in model_and_params:
+        print('Invalid input')
+
+    # Unpack the tuple containing the estimator and params
+    est, params = model_and_params[input]
+
+    # Create GridSearchCV object using the estimator and parameters
+    gs = GridSearchCV(
+        estimator=est,
+        param_grid=params,
+        cv=10,
+        verbose=-2,
+        n_jobs=-1,
+        return_train_score=True,
+        scoring="neg_mean_squared_error"
+    )
+
+    # Fit the model on training data
+    gs.fit(X_train, y_train)
+
     if input == 'DecisionTree':
-        gs = GridSearchCV(
-                estimator=DecisionTreeRegressor(),
-                param_grid= param,
-                cv=10,
-                verbose=-2, # muestra el progreso - 2 pa que no te saque todo el input
-                n_jobs = -1,
-                return_train_score = True,
-                scoring="neg_mean_squared_error")
-        gs.fit(X_train, y_train)
         fig = plt.figure(figsize=(12, 6))
         tree.plot_tree(gs.best_estimator_, feature_names=X_train.columns, filled=True);
-    elif input == 'RandomForest':
-        gs = GridSearchCV(
-            estimator=RandomForestRegressor(),
-            param_grid= param,
-            cv=10,
-            verbose=-2, # muestra el progreso - 2 pa que no te saque todo el input
-            n_jobs = -1,
-            return_train_score = True,
-            scoring="neg_mean_squared_error")
-        gs.fit(X_train, y_train)
-        clear_output(wait = True)
-    elif input == 'GradientBoosting':
-        gs = GridSearchCV(
-            estimator=GradientBoostingRegressor(),
-            param_grid= param,
-            cv=10,
-            verbose=-2, # muestra el progreso - 2 pa que no te saque todo el input
-            n_jobs = -1,
-            return_train_score = True,
-            scoring="neg_mean_squared_error")
-        gs.fit(X_train, y_train)
-        clear_output(wait = True)
-    else: 
-        print('aprende a escribir')
-    print(datetime.now())
-    return gs.best_estimator_, param
+
+    print(f"End time: {datetime.now()}")
+    return gs.best_estimator_, params
 
 def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features, min_samples_split, min_samples_leaf, input):
     if input == 'DecisionTree':
@@ -307,7 +314,8 @@ def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features,
     #test_df  = pd.DataFrame({'Real': y_test,  'Predicted': y_pred_test,  'Set': ['Test']*len(y_test)})
     #results = pd.concat([train_df,test_df], axis = 0)
     #results['residual'] = results['Real'] - results['Predicted']
-
+    with open(f'data/modelo/modelo_{input}.pkl', 'wb') as modelo:
+        pickle.dump(modelo, modelo)
     return y_pred_test, y_pred_train
 
 def knn_crossvalscore(X, y):
@@ -322,12 +330,14 @@ def knn_crossvalscore(X, y):
         knn_scores.append(score.mean())
     knn = pd.DataFrame(knn_scores, range(1,21)).reset_index()
     knn.columns = ["number_neighbors", "score"]
-    knn.sort_values(by = "score", ascending = False).head(3)
-    return knn
+    #knn.sort_values(by = "score", ascending = False).head(3)
+    return knn.sort_values(by = "score", ascending = False).head(3)
 
 def modelo_knn(X_train, y_train, X_test, y_test, neighbors):
     knn = KNeighborsRegressor(n_neighbors = neighbors)
     knn.fit(X_train, y_train)
     y_pred_test = knn.predict(X_test)
     y_pred_train = knn.predict(X_train)
+    with open(f'data/modelo/modelo_knn.pkl', 'wb') as modelo:
+        pickle.dump(modelo, knn)
     return y_pred_test, y_pred_train
