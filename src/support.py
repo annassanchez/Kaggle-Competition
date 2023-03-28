@@ -84,7 +84,28 @@ def regplot_numericas(dataframe, columnas_drop, variable_respuesta):
             )
     fig.tight_layout();
 
-def chart_categoricas(df, variable_respuesta):
+def chart_categoricas_count(df):
+    print(f'este chart da la distribución de las variables categóricas')
+    fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (30, 10))
+
+    axes = axes.flat
+
+    df_cat = df.select_dtypes(include = 'object')#.columns
+
+    for i, colum in enumerate(df_cat.columns):
+        chart = sns.countplot(
+                x = df_cat[colum],
+                #hue = df_cat['Offer_Accepted'],
+                ax = axes[i])
+        total = float(len(df_cat[colum]))
+        for p in chart.patches:
+            height = p.get_height()
+            chart.text(p.get_x() + p.get_width() / 2., height + 3,
+                    '{:.2f}%'.format((height / total) * 100),
+                    ha='center')
+    fig.tight_layout();
+
+def chart_categoricas_value(df, variable_respuesta):
     df_cate = df.select_dtypes(include = 'object')
     print(f'este chart da la relación de las variables categóricas con la variable respuesta: {variable_respuesta}')
     fig, axes = plt.subplots(nrows=math.ceil(df_cate.shape[1]/2), ncols=math.ceil(df_cate.shape[1] / 2), figsize = (10 * df_cate.shape[1] / 2, 10 * df_cate.shape[1] / 2))
@@ -341,3 +362,25 @@ def modelo_knn(X_train, y_train, X_test, y_test, neighbors):
     with open(f'../data/modelo/modelo_knn.pkl', 'wb') as modelo:
         pickle.dump(knn, modelo)
     return y_pred_test, y_pred_train
+
+def transformers_input(encoding_clarity, encoding_color, encoding_cut, estandarizacion, modelo):
+    # encoding clarity
+    with open(f'../data/modelo/{encoding_clarity}.pkl', 'rb') as clarity:
+        encoding_clarity = pickle.load(clarity)
+        
+    # encoding color
+    with open(f'../data/modelo/{encoding_color}.pkl', 'rb') as color:
+        encoding_color = pickle.load(color)
+        
+    # encoding cut
+    with open(f'../data/modelo/{encoding_cut}.pkl', 'rb') as cut:
+        encoding_cut = pickle.load(cut)
+
+    # estandarización
+    with open(f'../data/modelo/{estandarizacion}.pkl', 'rb') as estandarizacion:
+        estandarizacion = pickle.load(estandarizacion)
+    
+    # modelo
+    with open(f'../data/modelo/{modelo}.pkl', 'rb') as modelo:
+        modelo = pickle.load(modelo)
+    return encoding_clarity, encoding_color, encoding_cut, estandarizacion, modelo
