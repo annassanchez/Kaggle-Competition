@@ -218,7 +218,7 @@ def linear_regression(X_train, y_train, X_test, y_test):
     test_df  = pd.DataFrame({'Real': y_test,  'Predicted': y_pred_test,  'Set': ['Test']*len(y_test)})
     results = pd.concat([train_df,test_df], axis = 0)
     results['residual'] = results['Real'] - results['Predicted']
-    with open(f'data/modelo/modelo_lr.pkl', 'wb') as modelo:
+    with open(f'../data/modelo/modelo_lr.pkl', 'wb') as modelo:
         pickle.dump(modelo, modelo)
     return y_pred_test, y_pred_train, results
 
@@ -314,8 +314,8 @@ def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features,
     #test_df  = pd.DataFrame({'Real': y_test,  'Predicted': y_pred_test,  'Set': ['Test']*len(y_test)})
     #results = pd.concat([train_df,test_df], axis = 0)
     #results['residual'] = results['Real'] - results['Predicted']
-    with open(f'data/modelo/modelo_{input}.pkl', 'wb') as modelo:
-        pickle.dump(modelo, modelo)
+    with open(f'../data/modelo/modelo_{input}.pkl', 'wb') as modelo_:
+        pickle.dump(modelo, modelo_)
     return y_pred_test, y_pred_train
 
 def knn_crossvalscore(X, y):
@@ -338,6 +338,6 @@ def modelo_knn(X_train, y_train, X_test, y_test, neighbors):
     knn.fit(X_train, y_train)
     y_pred_test = knn.predict(X_test)
     y_pred_train = knn.predict(X_train)
-    with open(f'data/modelo/modelo_knn.pkl', 'wb') as modelo:
-        pickle.dump(modelo, knn)
+    with open(f'../data/modelo/modelo_knn.pkl', 'wb') as modelo:
+        pickle.dump(knn, modelo)
     return y_pred_test, y_pred_train
