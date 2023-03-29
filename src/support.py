@@ -48,6 +48,10 @@ from sklearn.exceptions import DataConversionWarning
 warnings.filterwarnings(action='ignore', category=DataConversionWarning)
 
 def analisis_basico(dataframe):
+    """
+    esta función coge un dataframe y saca los principales elementos preiminares de un eda: la estructura de datos, si hay nulos, duplicados, el tipo de variables numéricas o categórcias y un pairplot para ver la relación entre variables.
+    param: dataframe
+    """
     print("_________________________________\n")
     print (f"1_Estructura de los datos: {dataframe.shape}")
     display(dataframe.head(2))
@@ -69,6 +73,13 @@ def analisis_basico(dataframe):
     print("_________________________________\n")
 
 def regplot_numericas(dataframe, columnas_drop, variable_respuesta):
+    """
+    esta función da un chart que relaciona las columnas numéricas de un dataframe con la variable
+    param: dataframe -> el dataframe a representar
+        columnas_drop -> las columnas a borrar (un id alguna columna que no se quiera representar) -> se pasa en formato lista
+        variable_respuesta -> las columnas a borrar (en este caso, la variable respuesta)
+    """
+    print(f'distribución de las variables numéricas en relación con la variable respuesta: {variable_respuesta}')
     df_numericas = dataframe.select_dtypes(include = np.number)
     columnas = df_numericas.drop(columnas_drop, axis = 1)
     fig, axes = plt.subplots(nrows=int(columnas.shape[1]/2), ncols=int(columnas.shape[1] / 3), figsize = (10 * columnas.shape[1] / 2,10 * columnas.shape[1] / 3))
@@ -85,6 +96,10 @@ def regplot_numericas(dataframe, columnas_drop, variable_respuesta):
     fig.tight_layout();
 
 def chart_categoricas_count(df):
+    """
+    esta función toma un dataframe y presnta unos histogramas con las variables categóricas
+    param: dataframe -> dataframe del que se sacan los gráficos
+    """
     print(f'este chart da la distribución de las variables categóricas')
     fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (30, 10))
 
@@ -106,6 +121,11 @@ def chart_categoricas_count(df):
     fig.tight_layout();
 
 def chart_categoricas_value(df, variable_respuesta):
+    """
+    esta función es para hacer un chart que relacione las variables categóricas con la mediana del valor de la variable respuesta
+    param: dataframe -> dataframe que se quiere representar
+        variable_respuesta -> la variable respuesta del dataframe
+    """
     df_cate = df.select_dtypes(include = 'object')
     print(f'este chart da la relación de las variables categóricas con la variable respuesta: {variable_respuesta}')
     fig, axes = plt.subplots(nrows=math.ceil(df_cate.shape[1]/2), ncols=math.ceil(df_cate.shape[1] / 2), figsize = (10 * df_cate.shape[1] / 2, 10 * df_cate.shape[1] / 2))
@@ -120,6 +140,11 @@ def chart_categoricas_value(df, variable_respuesta):
     fig.tight_layout();
 
 def chart_boxplot(dataframe):
+    """
+    esta funcion saca los boxplots de las variables numéricas - incluyendo la variable respuesta
+    param: dataframe
+    """
+    print('detección de outliers')
     df_numericas = dataframe.select_dtypes(include = np.number).drop(['id'], axis = 1)
 
     fig, ax = plt.subplots(df_numericas.shape[1], 1, figsize=(12, 2.5 * df_numericas.shape[1]))
@@ -130,6 +155,12 @@ def chart_boxplot(dataframe):
     plt.show();
 
 def detectar_outliers(lista_columnas, dataframe):
+    """
+    función que devuelve un diccionario con los índices del dataframe que contienen outliers para las columnas dadas.
+    param: lista_columnas -> columnas numéricas de las que se quieren sacar los outliers
+        dataframe -> el dataframe del que se quieren obtener los outliers
+    output: dict_indices -> un diccionario con las columnas y los índices que contienen outliers del data frame
+    """
     dict_indices = {}
     for i in lista_columnas:
         Q1 = np.nanpercentile(dataframe[i], 25)
@@ -148,6 +179,15 @@ def detectar_outliers(lista_columnas, dataframe):
     return dict_indices
 
 def normalizacion(df, variable_respuesta):
+    """
+    esta función normaliza la variable respuesta y da los resultados estadísticos (test de shapiro) para poder evaluar la respuesta
+    parámetros: df -> dataframe a normalizar
+        variable_respuesta -> la variable que se quiere normalizar
+    output: dataframe con las variable respuesta y las normalizaciones:
+        -logarítmica
+        -raíz cuadrada
+        -boxcox
+    """
     df[f'{variable_respuesta}_LOG'] = df[variable_respuesta].apply(lambda x: np.log(x) if x != 0 else 0)
     df[f'{variable_respuesta}_SQRT'] = df[variable_respuesta].apply(lambda x: math.sqrt(x) if x != 0 else 0)
     df[f'{variable_respuesta}_BC'], lambda_ajustada = stats.boxcox(df[variable_respuesta])
@@ -173,6 +213,15 @@ def normalizacion(df, variable_respuesta):
     return df
 
 def estandarizacion(dataframe, columnas, input):
+    """
+    esta función hace la estandarización de las variables numéricas
+    parámetros: df-> dataframe a estandarizar
+        columnas -> la lista de las columnas numéricas que se quieren estandarizar
+        input -> el tipo de estandarización que se quiere hacer:
+            - media: StandardScaler()
+            - mediana: RobustScaler()
+    output: devuelve un dataframe con las columnas transformadas
+    """
     data = dataframe[columnas]
     if input == 'media':
         modelo = StandardScaler()
@@ -187,6 +236,15 @@ def estandarizacion(dataframe, columnas, input):
     return X
 
 def encoding(dataframe, columnas, input):
+    """
+    esta función hace un encoding con orden o sin orden de las columnas categóricas del dataframe
+    parámetros: dataframe -> el dataframe de origen del que se quiere hacer el encoding
+        columnas -> las columnas categóricas de las que se quiere hacer el encoding
+        input -> texto que puede ser de dos tipos (según el encoding que se quiera hacer)
+            - 'sin orden' -> OneHotEncoder
+            - 'con orden' -> OrdinalEncoder
+    output: el dataframe con las columnas encodeadas
+    """
     if input == 'sin orden':
         modelo = OneHotEncoder()
         for columna in columnas:
@@ -218,8 +276,35 @@ def encoding(dataframe, columnas, input):
     else:
         print("aprende a escribir")
 
-def metricas(y_test, y_train, y_test_pred, y_train_pred, tipo_modelo):
+def ordinal_map(df, columna, orden_valores):
+    """
+    esta función hace un encoding con un orden dado a partir de un mapeo
+    parámetros: dataframe -> el dataframe de origen del que se quiere hacer el encoding
+        columna -> la columna que se quiere transformar
+        orden_valores -> el orden con el que se quiere hacer el mapeo (de más a menos importantes)
+    output: el dataframe con las columnas encodeadas
+    """
+    ordinal_dict = {}
     
+    for i, valor in enumerate(orden_valores):
+        ordinal_dict[valor] = i
+        
+    nuevo_nombre = columna + "_mapeada"
+    
+    df[nuevo_nombre] = df[columna].map(ordinal_dict)
+    
+    return df
+
+def metricas(y_test, y_train, y_test_pred, y_train_pred, tipo_modelo):
+    """
+    esta función evalua las variables respuesta iniciales y las predichas y calcula las métricas para evaluar los modelos de tipo lineal
+    parámetros: y_test -> la variable respuesta original del dataframe de test (el que prueba)
+        y_train -> la variable respuesta original del dataframe de train (el que entrena el modelo)
+        y_test_pred -> la variable respuesta predicha del dataframe de test (el que prueba)
+        y_train_pred -> la variable respuesta predicha del dataframe de test (el que prueba)
+        tipo_modelo -> el nombre del modelo a evaluar (DecissionTree, RandomForest, GradientBoosting...)
+    output: un dataframe con las métricas para el dataframe de test y el de train
+    """
     resultados = {'MAE': [metrics.mean_absolute_error(y_test, y_test_pred), metrics.mean_absolute_error(y_train, y_train_pred)],
                 'MSE': [metrics.mean_squared_error(y_test, y_test_pred), metrics.mean_squared_error(y_train, y_train_pred)],
                 'RMSE': [np.sqrt(metrics.mean_squared_error(y_test, y_test_pred)), np.sqrt(metrics.mean_squared_error(y_train, y_train_pred))],
@@ -230,6 +315,16 @@ def metricas(y_test, y_train, y_test_pred, y_train_pred, tipo_modelo):
     return df
 
 def linear_regression(X_train, y_train, X_test, y_test):
+    """
+    función para calcular la regresión lineal y almacenar el modelo
+    input: X_train -> las variables predictoras del dataframe de entrenamiento
+        y_train -> la variable respuesta del dataframe de entrenamiento
+        X_test -> las variables predictoras del dataframe a testear
+        y_test -> la variable respuesta del dataframe de testear
+    output: y_pred_test -> el valor respuesta predicho del dataframe a entrenar
+        y_pred_train -> el valor respuesta predicho del dataframe a testar
+        results -> un dataframe con los resultados de la desviación entre el valor predicho y el valor real
+    """
     modelo = LinearRegression()
     modelo.fit(X_train, y_train)
     y_pred_test = modelo.predict(X_test)
@@ -244,6 +339,17 @@ def linear_regression(X_train, y_train, X_test, y_test):
     return y_pred_test, y_pred_train, results
 
 def decission_tree_params(X_train, y_train, X_test, y_test):
+    """
+    función para obtener las max_features (máximo número de elementos) y max_depth (la profundidad que tiene el árbol), que son los parámetros que luego se introducen para poder hacer las predicciones
+    input: X_train -> las variables predictoras del dataframe de entrenamiento
+        y_train -> la variable respuesta del dataframe de entrenamiento
+        X_test -> las variables predictoras del dataframe a testear
+        y_test -> la variable respuesta del dataframe de testear
+    output: y_pred_test -> el valor respuesta predicho del dataframe a entrenar
+        y_pred_train -> el valor respuesta predicho del dataframe a testar
+        max_features -> máximo número de variables necesarias
+        max_depth -> máxima profundidad del modelo
+    """
     # create a regressor object
     modelo = DecisionTreeRegressor(random_state = 0) 
     
@@ -258,6 +364,21 @@ def decission_tree_params(X_train, y_train, X_test, y_test):
     return y_pred_test_dt, y_pred_train_dt, max_features, max_depth
 
 def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_features, input):
+    """
+    función para obtener los mejores parámetros (max depth, max_features, min_sample_split, min_samples_leaf) para hacer la predicción, según el modelo que se haya elegido
+    input: X_train -> las variables predictoras del dataframe de entrenamiento
+        y_train -> la variable respuesta del dataframe de entrenamiento
+        X_test -> las variables predictoras del dataframe a testear
+        y_test -> la variable respuesta del dataframe de testear
+        max_depth -> profundidad máxima resultado del decision_tree_params
+        max_features -> número máximo de las variables a tener en cuenta para el cálculo
+        input -> modelo del que se quiere sacar los mejores parámetros:
+            -DecissionTree
+            -RandomForest
+            -GradientBoosting
+    output: best_estimator -> el objeto de scikitlearn con los mejores parámetros
+        params -> los parámetros usados en el gridsearch
+    """
     print(f"Start time: {datetime.now()}")
 
     # Define dictionary with key-value pairs of estimator class and params
@@ -312,6 +433,23 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
     return gs.best_estimator_, params
 
 def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features, min_samples_split, min_samples_leaf, input):
+    """
+    función para hacer el modelo de predicción de tipo DecissionTree, ReandomForest
+    input: X_train -> las variables predictoras del dataframe de entrenamiento
+        y_train -> la variable respuesta del dataframe de entrenamiento
+        X_test -> las variables predictoras del dataframe a testear
+        y_test -> la variable respuesta del dataframe de testear
+        max_depth -> profundidad obtenida del mejor modelo
+        max_features -> número máximo de las variables obtenidas del mejor modelo
+        min_samples_split -> profundidad obtenida del mejor modelo
+        min_samples_leaf -> número máximo de las variables obtenidas del mejor modelo
+        input -> modelo del que se quiere sacar los mejores parámetros:
+            -DecissionTree
+            -RandomForest
+            -GradientBoosting
+    output: y_pred_test -> el valor respuesta predicho del dataframe a entrenar
+        y_pred_train -> el valor respuesta predicho del dataframe a testar
+    """
     if input == 'DecisionTree':
         modelo = DecisionTreeRegressor( max_depth =  max_depth, 
                                 max_features=max_features, 
@@ -340,6 +478,13 @@ def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features,
     return y_pred_test, y_pred_train
 
 def knn_crossvalscore(X, y):
+    """
+    esta función calcula el número de vecinos óptimo para realizar el modelo KNeighbors.
+    para ello toma la variable respuesta y las variables predictoras y devuelve un dataframe con los tres mejores registros
+    input: X -> las variables predictoras
+        y -> la variable respuesta
+    output: dataframe -> con los resultados de los mejores vecinos ordenados por el NMSE
+    """
     knn_scores =[]
     for k in range(1,21):
         # por defecto nos devuelve la precisión
@@ -355,6 +500,16 @@ def knn_crossvalscore(X, y):
     return knn.sort_values(by = "score", ascending = False).head(3)
 
 def modelo_knn(X_train, y_train, X_test, y_test, neighbors):
+    """
+    esta función sirve para hacer la prodección con el modelo KNeighbors.
+    input: X_train -> las variables predictoras del dataframe de entrenamiento
+        y_train -> la variable respuesta del dataframe de entrenamiento
+        X_test -> las variables predictoras del dataframe a testear
+        y_test -> la variable respuesta del dataframe de testear
+        negihbors -> el número de vecinos necesarios para hacer la predicción
+    output: y_pred_test -> el valor respuesta predicho del dataframe a entrenar
+        y_pred_train -> el valor respuesta predicho del dataframe a testar
+    """
     knn = KNeighborsRegressor(n_neighbors = neighbors)
     knn.fit(X_train, y_train)
     y_pred_test = knn.predict(X_test)
@@ -364,6 +519,14 @@ def modelo_knn(X_train, y_train, X_test, y_test, neighbors):
     return y_pred_test, y_pred_train
 
 def transformers_input(encoding_clarity, encoding_color, encoding_cut, estandarizacion, modelo):
+    """
+    función que importa los modelos necesarios para hacer la predicción. para ello, se importa el encoding, estandarización y el modelo.
+    input: encoding_clarity -> el nombre del archivo que aloja el encoding
+        encoding_color -> el nombre del archivo que aloja el encoding
+        encoding_cut -> el nombre del archivo que aloja el encoding
+        estandarizacion -> nombre del archivo que aloja el objeto de estandarización
+        modelo -> el objeto que realizó la predicción, y que está entrenado con los resultados
+    """
     # encoding clarity
     with open(f'../data/modelo/{encoding_clarity}.pkl', 'rb') as clarity:
         encoding_clarity = pickle.load(clarity)
