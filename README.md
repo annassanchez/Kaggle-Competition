@@ -3,6 +3,7 @@
 ![yo, mirando los diamantes que me podría comprar si ganara](https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Audrey_Hepburn_in_Breakfast_at_Tiffany%27s.jpg/640px-Audrey_Hepburn_in_Breakfast_at_Tiffany%27s.jpg)
 
 # Index
+
 1. `data`
     - `data/modelo` -> output from the different tranformer objects and machine learning model
         - `encoding_clarity` -> encoding object for the `clarity` column
@@ -32,7 +33,8 @@ This is the third project of the Ironhack's Data Analysis Bootcamp.
 <br>The aim of this project is to develop a machine learning model pipeline to predict the price of diamonds given the dataset and submit it to the competition. So basically, is to win the competition with the most accurate prediction!
 
 # Data
-## meta
+
+## Diamond's 4Cs
 The price of diamonds is given by the 4C's:
 - `carat`: the diamond weight. 
 <br>One carat weighs 1/5 of a gram and is divided into 100 points, so a diamond weighing 1.07 ct. is referred to as "one carat and seven points."
@@ -49,7 +51,6 @@ Each of the C's is graded on a scale and can be evaluated for quality. The final
 
 ## variables
 The file contains the following variables:
-**variables:**
 - `id`: only for test & sample submission files, id for prediction sample identification
 - `price`: price in USD. Is the variable that needs to be predicted in the `test.csv` file.
 - `carat`: weight of the diamond, measured in qt.
@@ -63,6 +64,9 @@ The file contains the following variables:
 - `table`: width of top of diamond relative to widest point (43--95).
 
 # Challenge
+
+So the challenge is to predict the `price` of the diamonds given the variables presented above.
+<br>Here's a dashboard that protrays the results.
 
 # Toolkit
 
