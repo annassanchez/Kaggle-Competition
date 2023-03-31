@@ -284,14 +284,11 @@ def ordinal_map(df, columna, orden_valores):
         orden_valores -> el orden con el que se quiere hacer el mapeo (de más a menos importantes)
     output: el dataframe con las columnas encodeadas
     """
-    ordinal_dict = {}
-    
-    for i, valor in enumerate(orden_valores):
-        ordinal_dict[valor] = i
-        
-    nuevo_nombre = columna + "_mapeada"
-    
-    df[nuevo_nombre] = df[columna].map(ordinal_dict)
+    modelo = OrdinalEncoder(categories = [orden_valores], dtype = int)
+    transformados = modelo.fit_transform(df[[columna]])
+    df[columna] = transformados
+    with open(f'../data/modelo/encoding_{columna}.pkl', 'wb') as s:
+        pickle.dump(modelo, s)
     
     return df
 
