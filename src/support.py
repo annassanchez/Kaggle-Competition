@@ -429,7 +429,7 @@ def modelos_grid_search(X_train, y_train, X_test, y_test, max_depth, max_feature
     print(f"End time: {datetime.now()}")
     return gs.best_estimator_, params
 
-def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features, min_samples_split, min_samples_leaf, input):
+def modelo_prediccion(X_train, y_train, X_test, y_test, depth, features, samples_split, samples_leaf, input):
     """
     función para hacer el modelo de predicción de tipo DecissionTree, ReandomForest
     input: X_train -> las variables predictoras del dataframe de entrenamiento
@@ -448,20 +448,20 @@ def modelo_prediccion(X_train, y_train, X_test, y_test, max_depth, max_features,
         y_pred_train -> el valor respuesta predicho del dataframe a testar
     """
     if input == 'DecisionTree':
-        modelo = DecisionTreeRegressor( max_depth =  max_depth, 
-                                max_features=max_features, 
-                                min_samples_split=min_samples_split, 
-                                min_samples_leaf=min_samples_leaf)
+        modelo = DecisionTreeRegressor( max_depth =  depth, 
+                                max_features=features, 
+                                min_samples_split=samples_split, 
+                                min_samples_leaf=samples_leaf)
     elif input == 'RandomForest':
-        modelo = RandomForestRegressor(min_samples_split= min_samples_split,
-                           min_samples_leaf=min_samples_leaf,
-                           max_features=max_features,
-                           max_depth=max_depth)
+        modelo = RandomForestRegressor( max_depth =  depth, 
+                                max_features=features, 
+                                min_samples_split=samples_split, 
+                                min_samples_leaf=samples_leaf)
     elif input == 'GradientBoosting':
-        modelo = GradientBoostingRegressor(min_samples_split= min_samples_split,
-                    min_samples_leaf=min_samples_leaf,
-                    max_features=max_features,
-                    max_depth=max_depth)
+        modelo = GradientBoostingRegressor( max_depth =  depth, 
+                                max_features=features, 
+                                min_samples_split=samples_split, 
+                                min_samples_leaf=samples_leaf)
     modelo.fit(X_train, y_train)
     y_pred_test = modelo.predict(X_test)
     y_pred_train = modelo.predict(X_train)
