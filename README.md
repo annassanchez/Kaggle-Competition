@@ -39,11 +39,11 @@ The price of diamonds is given by the 4C's:
 - `carat`: the diamond weight. 
 <br>One carat weighs 1/5 of a gram and is divided into 100 points, so a diamond weighing 1.07 ct. is referred to as "one carat and seven points."
 <br>Diamonds of the same weight doesn't mean that the size appearance i the same is the same -> other factors as the `cut` or the material might affect also.
-- `cut`: the quality of the diamond's cut. The cut is measures the diamond's refeaction - evaluating how the light angle shifts through the diamond. The better the cut, the diamond is clearer and shines brighter, therfore is more expensive. If the cut is not well enough, the diamond will be more matt and
+- `cut`: the quality of the diamond's cut. The cut is measures the diamond's refeaction - evaluating how the light angle shifts through the diamond. The better the cut, the diamond is clearer and shines brighter, therfore is more expensive. If the cut is not well enough, the diamond will be more matt and less clear.
 - `color`: the color of the diamond. The color is coded from `D` to `Z`, according to how clear it is. 
 <br>To determine the correct color, all submitted diamonds are compared to an internationally accepted master set of stones, the colors of which range from `D`, or colorless (the most sought after) to `Z`, the most yellow/brown - aside from "fancy" yellow or brown.
 - `clarity`: a measurement of how clear the diamond is.
-<br>There are two types of clarity characteristics: inclusions and blemishes. In order to grade the clarity of a diamond, it is necessary to observe the number and nature of external and internal characteristics of the stone, as well as their size and position. The difference is based on their locations: inclusions are enclosed within a diamond, while blemishes are external characteristics. IGI grading reports show plotted diagrams of clarity characteristics marked in red for internal and green for external features.
+<br>There are two types of clarity characteristics: inclusions and blemishes. In order to grade the clarity of a diamond, it is necessary to observe the number and nature of external and internal characteristics of the stone, as well as their size and position. The difference is based on their locations: inclusions are enclosed within a diamond, while blemishes are external characteristics.
 
 ![](https://www.igi.org/assets/images/diamond-4cs.jpg)
 Each of the C's is graded on a scale and can be evaluated for quality. The final price is given by an equilibrium of all of the variables - the higher they rank in all the variables, the better.

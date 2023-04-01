@@ -9,6 +9,20 @@ st.set_page_config(layout="wide", initial_sidebar_state="collapsed", page_title=
 
 data = sd.importDatasets()
 
+col1, col2= st.columns(2)
+
+with col1:
+   st.markdown("""
+<a style='text-align: center' href="/" >main</a>
+""", unsafe_allow_html=True)
+
+with col2:
+   st.markdown("""
+<a style='text-align: center' href="/prediction">prediction</a>
+""", unsafe_allow_html=True)
+   
+st.markdown("<h1 style='text-align: center'>Exploratory Data Analysis</h1>", unsafe_allow_html=True)
+
 st.markdown("## Preliminary analysis")
 a,b,c,d, e, f = si.analisis_basico(data)
 col1, col2 = st.columns([3,5])

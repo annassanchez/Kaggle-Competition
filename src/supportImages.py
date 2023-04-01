@@ -21,13 +21,7 @@ def analisis_basico(dataframe):
     outpit: dataframe.shape
         test -> a dataframe that gives the columns of the given dataframe and if theis columns have null values
     """
-    display(dataframe.head(2))
-    display(dataframe.info())
-    print(dataframe.duplicated().sum())
-    display(pd.concat([dataframe.isnull().sum(), dataframe.dtypes], axis = 1).rename(columns = {0: "nulos", 1: "dtypes"}))
     test = pd.concat([dataframe.isnull().sum(), dataframe.dtypes], axis = 1).rename(columns = {0: "nulos", 1: "dtypes"})
-    display(dataframe.describe().T)
-    display(dataframe.describe(include = "object").T)
     sns.pairplot(data=dataframe.drop(['id'], axis = 1));
     plt.savefig('./images/pairplot.png')
     return dataframe.shape, test, dataframe.describe().T, dataframe.describe(include = "object").T, dataframe.duplicated().sum(), dataframe.isnull().sum()
@@ -43,7 +37,6 @@ def regplot_numericas(dataframe, columnas_drop, variable_respuesta):
         columnas_drop -> las columnas a borrar (un id alguna columna que no se quiera representar) -> se pasa en formato lista
         variable_respuesta -> las columnas a borrar (en este caso, la variable respuesta)
     """
-    print(f'distribución de las variables numéricas en relación con la variable respuesta: {variable_respuesta}')
     df_numericas = dataframe.select_dtypes(include = np.number)
     columnas = df_numericas.drop(columnas_drop, axis = 1)
     fig, axes = plt.subplots(nrows=int(columnas.shape[1]/3), ncols=int(columnas.shape[1]/2), figsize = (5 * columnas.shape[1] / 2, 5 * columnas.shape[1] / 3))
@@ -71,7 +64,6 @@ def chart_categoricas_count(df):
     esta función toma un dataframe y presnta unos histogramas con las variables categóricas
     param: dataframe -> dataframe del que se sacan los gráficos
     """
-    print(f'este chart da la distribución de las variables categóricas')
     fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (30, 10))
 
     axes = axes.flat
@@ -99,7 +91,6 @@ def chart_categoricas_value(df, variable_respuesta):
         variable_respuesta -> la variable respuesta del dataframe
     """
     df_cate = df.select_dtypes(include = 'object')
-    print(f'este chart da la relación de las variables categóricas con la variable respuesta: {variable_respuesta}')
     fig, axes = plt.subplots(nrows=1, ncols=math.ceil(df_cate.shape[1]), figsize = (30, 10))
     axes = axes.flat
     for i, columns in enumerate(df_cate.columns):
@@ -117,8 +108,7 @@ def chart_boxplot(dataframe):
     esta funcion saca los boxplots de las variables numéricas - incluyendo la variable respuesta
     param: dataframe
     """
-    print('detección de outliers')
-    df_numericas = dataframe.select_dtypes(include = np.number).drop(['id'], axis = 1)
+    df_numericas = dataframe.select_dtypes(include = np.number)
 
     fig, ax = plt.subplots(df_numericas.shape[1], 1, figsize=(12, 2.5 * df_numericas.shape[1]))
 
