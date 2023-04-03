@@ -85,6 +85,7 @@ So the challenge is to predict the `price` of the diamonds given the variables p
 # Status
 
 Version 1.0 > There are some inifinite prints that need to be refined on some of the models. 
+    > Also the streamlit app is not working > finish the analysis + prepare for deployment
 
 # Contact
 
